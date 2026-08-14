@@ -1,0 +1,23 @@
+CẤU HÌNH RENDER ĐỂ CẬP NHẬT KHÔNG MẤT DỮ LIỆU
+
+1) Dùng Web Service trả phí (Free không hỗ trợ Persistent Disk).
+2) Settings/Disks -> Add Disk
+   Mount Path: /var/data
+   Size: 1 GB (hoặc lớn hơn nếu cần)
+3) Environment thêm:
+   DATA_DIR=/var/data/nhaplieu
+   PERSISTENT_STORAGE=1
+   APP_ENV=production
+   SECRET_KEY=<giữ nguyên một giá trị cố định>
+4) Build Command:
+   pip install -r requirements.txt
+5) Start Command:
+   gunicorn app:app --workers 1
+6) Deploy.
+
+Sau khi cấu hình xong, các lần cập nhật source trên GitHub sẽ không ghi đè app.db và file Excel nằm ở /var/data/nhaplieu.
+
+TRƯỚC KHI CHUYỂN TỪ BẢN CŨ SANG V5:
+- Đăng nhập Admin bản cũ và tải file Excel tổng hợp.
+- Nếu bản cũ chưa có nút Backup thì giữ lại dữ liệu hiện tại trước khi redeploy.
+- Bản V5 có nút TẢI BẢN SAO LƯU để dùng cho các lần nâng cấp tiếp theo.

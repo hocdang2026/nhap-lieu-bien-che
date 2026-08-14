@@ -1,0 +1,56 @@
+{% extends 'base.html' %}{% block content %}
+<div class="page-head">
+  <div><h1>Quản trị hệ thống</h1><p class="muted">Theo dõi tiến độ, cấu hình trường nhập và quản lý toàn bộ đơn vị.</p></div>
+  <div class="actions"><a class="button" href="{{ url_for('excel_template_manager') }}">Tải / nhận dạng Excel</a><a class="button success" href="{{ url_for('export_excel') }}">Tải Excel tổng hợp</a></div>
+</div>
+
+<div class="stats"><div class="stat"><b>{{ stats['total'] }}</b><span>Tổng đơn vị</span></div><div class="stat"><b>{{ stats['submitted'] }}</b><span>Đã nhập</span></div><div class="stat"><b>{{ stats['total']-stats['submitted'] }}</b><span>Chưa nhập</span></div></div>
+
+<div class="card config-card">
+  <div class="section-title"><span class="section-number">1</span><div><h2>Cấu hình dữ liệu cần nhập</h2><p class="muted">Chọn trường hiển thị trên phiếu của đơn vị và đánh dấu trường bắt buộc nếu cần.</p></div></div>
+  <form method="post" action="{{ url_for('update_field_settings') }}">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <div class="field-setting-list">
+    {% for f in fields %}
+      <div class="field-setting-row">
+        <div class="field-title"><b>{{ f.label }}</b><small>Cột {{ f.column_letter }} trên file tổng</small></div>
+        <label class="check-label"><input type="checkbox" name="enabled_{{ f.key }}" value="1" {% if f.enabled %}checked{% endif %}> Cho đơn vị nhập</label>
+        <label class="check-label"><input type="checkbox" name="required_{{ f.key }}" value="1" {% if f.required %}checked{% endif %}> Bắt buộc</label>
+      </div>
+    {% endfor %}
+    </div>
+    <button class="button success" type="submit">LƯU CẤU HÌNH</button>
+  </form>
+</div>
+
+<div class="card config-card">
+  <div class="section-title"><span class="section-number">2</span><div><h2>Dữ liệu & sao lưu khi cập nhật</h2><p class="muted">Tài khoản, mật khẩu, số liệu, cấu hình và file Excel được lưu trong thư mục dữ liệu riêng. Hãy tải một bản sao lưu trước các thay đổi lớn.</p></div></div>
+  <div class="backup-grid">
+    <div class="backup-box">
+      <h3>Trạng thái lưu trữ</h3>
+      <p><b>Thư mục dữ liệu:</b><br><code>{{ storage_info.data_dir }}</code></p>
+      {% if storage_info.persistent_expected %}<span class="badge green">Đang cấu hình lưu bền vững</span>{% else %}<span class="badge red">Chưa xác nhận Persistent Storage</span>{% endif %}
+      <p class="muted small-text">Trên Render, cần gắn Persistent Disk và đặt DATA_DIR vào đường dẫn của disk để dữ liệu tự giữ qua deploy/restart.</p>
+    </div>
+    <div class="backup-box">
+      <h3>Sao lưu toàn bộ</h3>
+      <p class="muted">Tạo 1 file ZIP chứa database, tài khoản/mật khẩu đã băm, dữ liệu đã nhập và file Excel đang sử dụng.</p>
+      <a class="button success" href="{{ url_for('download_full_backup') }}">TẢI BẢN SAO LƯU</a>
+    </div>
+    <div class="backup-box">
+      <h3>Khôi phục</h3>
+      <form method="post" action="{{ url_for('restore_full_backup') }}" enctype="multipart/form-data" onsubmit="return confirm('Khôi phục sẽ thay dữ liệu hiện tại bằng bản sao lưu đã chọn. Bạn có chắc không?')">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <input type="file" name="backup_file" accept=".zip" required>
+        <button class="button danger" type="submit">KHÔI PHỤC BẢN SAO LƯU</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="card table-wrap">
+<table><thead><tr><th>STT</th><th>Đơn vị</th><th>Tài khoản</th><th>Trạng thái</th><th>Cập nhật gần nhất</th><th>Thao tác</th></tr></thead><tbody>
+{% for u in units %}<tr><td>{{ loop.index }}</td><td><b>{{ u['name'] }}</b></td><td>{{ u['username'] }}</td><td>{% if u['updated_at'] %}<span class="badge green">Đã nhập</span>{% else %}<span class="badge gray">Chưa nhập</span>{% endif %}{% if not u['user_active'] %} <span class="badge red">Đã khóa</span>{% endif %}</td><td>{{ (u['updated_at'] or '-')|replace('T',' ') }}</td><td><a class="button small" href="{{ url_for('admin_unit', department_id=u['id']) }}">Quản lý</a></td></tr>{% endfor %}
+</tbody></table>
+</div>
+{% endblock %}
