@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <title>{{ title or 'Hệ thống nhập liệu' }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="app-header">
+  <div class="header-inner">
+    <div class="brand-wrap">
+      <div class="brand-mark">CM</div>
+      <div><div class="brand">HỆ THỐNG NHẬP LIỆU</div><div class="brand-sub">Quản lý và tổng hợp dữ liệu trực tuyến</div></div>
+    </div>
+    {% if me %}
+    <nav>
+      <span class="user-chip">{{ me['department_name'] or 'QUẢN TRỊ HỆ THỐNG' }}</span>
+      <a href="{{ url_for('change_password') }}">Đổi mật khẩu</a>
+      <a href="{{ url_for('logout') }}">Đăng xuất</a>
+    </nav>
+    {% endif %}
+  </div>
+</header>
+<main class="container">
+  {% with messages=get_flashed_messages(with_categories=true) %}
+    {% for category,msg in messages %}<div class="alert {{ category }}">{{ msg }}</div>{% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+<footer>Hệ thống nhập liệu nội bộ • Dữ liệu được phân quyền theo tài khoản • UTF-8 tiếng Việt</footer>
+</body>
+</html>
